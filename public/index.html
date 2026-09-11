@@ -1,13 +1,742 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#08090f" />
-    <meta name="description" content="HomePassport — Your home's digital record" />
-    <title>HomePassport</title>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#08090f"/>
+<title>HomePassport</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100vh;background:#08090f;color:#f1f5f9;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+:root{
+  --bg:#08090f;--surface:rgba(255,255,255,0.03);--border:rgba(255,255,255,0.07);
+  --accent:#6366f1;--accent-glow:rgba(99,102,241,0.22);--accent-border:rgba(99,102,241,0.35);
+  --text:#f1f5f9;--muted:#64748b;--subtle:#334155;
+}
+button{cursor:pointer;font-family:'DM Sans',sans-serif}
+input,select{font-family:'DM Sans',sans-serif}
+select option{background:#1e293b;color:#f1f5f9}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
+input::placeholder{color:var(--subtle)}
+.view{display:none}.view.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px 30px}
+.card.glow{border-color:var(--accent-border);box-shadow:0 0 36px var(--accent-glow)}
+.btn{padding:12px 26px;border-radius:11px;border:none;font-weight:600;font-size:15px;transition:all .18s;color:#fff;background:var(--accent);box-shadow:0 0 24px var(--accent-glow)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 0 36px var(--accent-glow)}
+.btn.ghost{background:rgba(99,102,241,.1);color:#818cf8;border:1px solid rgba(99,102,241,.2);box-shadow:none}
+.btn.ghost:hover{background:rgba(99,102,241,.2)}
+.btn.full{width:100%;padding:15px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 11px;border-radius:100px}
+.inp{width:100%;padding:13px 16px;border-radius:10px;border:1px solid var(--accent-border);background:rgba(99,102,241,.06);color:var(--text);font-size:15px;outline:none}
+.inp:focus{border-color:var(--accent)}
+.lbl{display:block;color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2 .span2{grid-column:1/-1}
+.hov{transition:all .18s}
+.hov:hover{border-color:rgba(99,102,241,.3)!important;transform:translateY(-1px)}
+nav{border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);position:sticky;top:0;background:rgba(8,9,15,.92);z-index:100;height:62px;flex-wrap:wrap;gap:10px}
+.nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--text);background:none;border:none;letter-spacing:-.5px}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:6px}
+.nav-link{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 15px;border-radius:8px;font-size:13px;font-weight:500;transition:all .15s}
+.nav-link:hover{background:rgba(99,102,241,.1);color:#818cf8}
+.shell{max-width:900px;margin:0 auto;padding:48px 24px 80px}
+.shell.wide{max-width:960px}
+.page-title{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;margin-bottom:8px;letter-spacing:-1px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.tab-btn{padding:11px 20px;border-radius:10px 10px 0 0;border:none;font-weight:600;font-size:14px;background:transparent;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s}
+.tab-btn.active{background:var(--surface);color:var(--text);border-bottom:2px solid var(--accent)}
+.tab-content{display:none}.tab-content.active{display:block}
+.bar-track{height:8px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;margin:16px 0}
+.bar-fill{height:100%;border-radius:100px;transition:width .6s ease}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:36px}
+.stat-card{padding:18px 22px}
+.stat-label{color:var(--muted);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.stat-value{font-size:30px;font-family:'Playfair Display',serif;font-weight:900;color:var(--accent);line-height:1}
+.stat-sub{font-size:12px;color:var(--subtle);margin-top:6px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
+.info-cell{background:rgba(255,255,255,.02);border-radius:10px;padding:10px 13px}
+.info-cell-label{font-size:10px;color:var(--subtle);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+.info-cell-value{font-size:14px;font-weight:600;color:var(--text)}
+.alert-box{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:20px 26px;margin-bottom:28px}
+.success-box{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:20px 24px;margin-bottom:28px}
+.missing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px}
+.missing-item{background:rgba(255,255,255,.02);border:1px dashed var(--border);border-radius:12px;padding:14px 18px}
+.cal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.cal-cell{border-radius:12px;padding:12px 14px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:#0f172a;border:1px solid var(--accent-border);border-radius:20px;padding:32px;max-width:520px;width:100%;box-shadow:0 0 60px var(--accent-glow)}
+.step-indicator{display:flex;gap:8px;align-items:center;margin-bottom:44px}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.step-line{width:28px;height:1px;background:var(--border)}
+.progress-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.progress-item{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:13px 18px;display:flex;justify-content:space-between;align-items:center}
+.share-bar{background:rgba(0,0,0,.3);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+.share-url{color:var(--muted);font-size:12px;flex:1;word-break:break-all}
+@media(max-width:600px){
+  .grid2{grid-template-columns:1fr}
+  .grid2 .span2{grid-column:1}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .cal-grid{grid-template-columns:repeat(3,1fr)}
+  nav{height:auto;padding:12px 16px}
+  .shell{padding:28px 16px 60px}
+}
+#landing{min-height:100vh}
+.landing-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;z-index:0}
+.landing-glow{position:fixed;top:15%;left:50%;transform:translateX(-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 65%);pointer-events:none;z-index:0}
+.landing-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px;max-width:720px;margin:0 auto}
+.landing-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);border-radius:100px;padding:6px 20px;margin-bottom:36px}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:#22c55e}
+.badge-text{font-size:11px;letter-spacing:3px;color:#818cf8;font-weight:700;text-transform:uppercase}
+.landing-h1{font-family:'Playfair Display',serif;font-size:clamp(44px,8vw,86px);font-weight:900;line-height:1.0;margin-bottom:28px;letter-spacing:-2px}
+.landing-sub{font-size:19px;color:var(--muted);line-height:1.75;margin-bottom:52px;font-weight:300;max-width:500px}
+.landing-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:36px}
+.feature-pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:72px}
+.feature-pill{font-size:13px;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:100px}
+.landing-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;padding-top:48px;border-top:1px solid var(--border)}
+.landing-stat-n{font-size:40px;font-family:'Playfair Display',serif;font-weight:900;color:var(--accent);line-height:1}
+.landing-stat-l{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+</style>
+</head>
+<body>
+<nav id="main-nav">
+  <button class="nav-logo" onclick="showView('landing')">Home<span>Passport</span></button>
+  <div class="nav-links">
+    <button class="nav-link" onclick="showView('lookup')">My Home</button>
+    <button class="nav-link" onclick="showView('self-log')">Add My Home</button>
+    <button class="nav-link" onclick="showView('contractor')">Contractors</button>
+  </div>
+</nav>
+<div id="landing" class="view active">
+  <div class="landing-grid"></div>
+  <div class="landing-glow"></div>
+  <div class="landing-inner">
+    <div class="landing-badge"><span class="badge-dot"></span><span class="badge-text">Live - Maine Beta</span></div>
+    <h1 class="landing-h1">Your home<br><span style="color:var(--accent)">finally has</span><br>a record.</h1>
+    <p class="landing-sub">Track every system in your house. Know what was installed, when it needs replacing, and what it will cost before it fails.</p>
+    <div class="landing-btns">
+      <button class="btn" onclick="showView('self-log')" style="padding:16px 40px;font-size:16px">Add My Home Free</button>
+      <button class="btn ghost" onclick="showView('lookup')" style="padding:16px 32px;font-size:16px">View My HomePassport</button>
+    </div>
+    <div class="feature-pills">
+      <span class="feature-pill">Maintenance Calendar</span>
+      <span class="feature-pill">Replacement Cost Estimates</span>
+      <span class="feature-pill">Warranty and Document Storage</span>
+      <span class="feature-pill">End-of-Life Alerts</span>
+    </div>
+    <div class="landing-stats">
+      <div><div class="landing-stat-n" id="stat-homes">0</div><div class="landing-stat-l">Homes Tracked</div></div>
+      <div><div class="landing-stat-n" id="stat-systems">0</div><div class="landing-stat-l">Systems Logged</div></div>
+      <div><div class="landing-stat-n" id="stat-contractors">0</div><div class="landing-stat-l">Contractors</div></div>
+    </div>
+  </div>
+</div>
+<div id="lookup" class="view">
+  <div class="shell">
+    <h1 class="page-title">Find Your HomePassport</h1>
+    <p style="color:var(--muted);margin-bottom:36px;font-size:16px">Search by address or name.</p>
+    <input class="inp" id="lookup-input" placeholder="42 Birchwood Lane or Jane Smith" oninput="searchHomes(this.value)" style="font-size:17px;padding:16px 20px;margin-bottom:28px;border-radius:14px"/>
+    <div id="lookup-status" style="color:var(--muted);display:none">Searching...</div>
+    <div id="lookup-results" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+</div>
+<div id="passport" class="view">
+  <div class="shell wide">
+    <div id="passport-header" style="margin-bottom:36px"></div>
+    <div class="share-bar">
+      <span class="share-url" id="passport-url"></span>
+      <button class="btn ghost" onclick="copyPassportUrl()" id="copy-btn" style="padding:8px 18px;font-size:13px">Copy Link</button>
+    </div>
+    <div id="passport-alerts"></div>
+    <div class="stat-grid" id="passport-stats"></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('systems')">Systems</button>
+      <button class="tab-btn" onclick="switchTab('maintenance')">Maintenance</button>
+      <button class="tab-btn" onclick="switchTab('documents')">Documents</button>
+    </div>
+    <div class="tab-content active" id="tab-systems"></div>
+    <div class="tab-content" id="tab-maintenance"></div>
+    <div class="tab-content" id="tab-documents"></div>
+  </div>
+</div>
+<div id="self-log" class="view">
+  <div class="shell" style="max-width:660px">
+    <div class="step-indicator" id="step-indicator"></div>
+    <div id="step-1">
+      <h1 class="page-title">Add Your Home</h1>
+      <p style="color:var(--muted);margin-bottom:32px">Create a free HomePassport for your property.</p>
+      <div class="grid2">
+        <div class="span2"><label class="lbl">Your Name *</label><input class="inp" id="sl-name" placeholder="Jane Smith"/></div>
+        <div class="span2"><label class="lbl">Email</label><input class="inp" id="sl-email" placeholder="jane@email.com"/></div>
+        <div class="span2"><label class="lbl">Property Address *</label><input class="inp" id="sl-address" placeholder="123 Maple St"/></div>
+        <div><label class="lbl">City</label><input class="inp" id="sl-city" placeholder="Portland"/></div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:0 0 80px"><label class="lbl">State</label><input class="inp" id="sl-state" placeholder="ME"/></div>
+          <div style="flex:1"><label class="lbl">Zip</label><input class="inp" id="sl-zip" placeholder="04101"/></div>
+        </div>
+      </div>
+      <button class="btn full" style="margin-top:28px" onclick="goStep2()">Continue - Add Your Systems</button>
+    </div>
+    <div id="step-2" style="display:none">
+      <h1 class="page-title">Your Home Systems</h1>
+      <p style="color:var(--muted);margin-bottom:28px">Add what you know. Estimates are fine - update anytime.</p>
+      <div id="sl-systems-list" class="progress-list" style="display:none"></div>
+      <div class="card glow" style="margin-bottom:20px">
+        <div class="grid2">
+          <div class="span2">
+            <label class="lbl">System</label>
+            <select class="inp" id="sl-sys">
+              <option value="Windows">Windows</option>
+              <option value="Roof">Roof</option>
+              <option value="HVAC">HVAC</option>
+              <option value="Water Heater">Water Heater</option>
+              <option value="Electrical Panel">Electrical Panel</option>
+              <option value="Gutters">Gutters</option>
+              <option value="Insulation">Insulation</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Do you know when installed?</label>
+            <select class="inp" id="sl-known">
+              <option value="yes">Yes, I know the date</option>
+              <option value="approx">Approximate year only</option>
+              <option value="no">No idea</option>
+            </select>
+          </div>
+          <div id="sl-date-wrap">
+            <label class="lbl" id="sl-date-lbl">Install Date</label>
+            <input class="inp" id="sl-date" type="date"/>
+          </div>
+          <div><label class="lbl">Brand (optional)</label><input class="inp" id="sl-brand" placeholder="e.g. Andersen"/></div>
+          <div><label class="lbl">Warranty Years</label><input class="inp" id="sl-warranty" type="number" placeholder="15"/></div>
+        </div>
+        <button class="btn ghost full" style="margin-top:18px" onclick="addSystem()">+ Add This System</button>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button class="btn ghost" onclick="goStep1()">Back</button>
+        <button class="btn" id="sl-create-btn" style="flex:1;padding:14px" onclick="createPassport()">Create HomePassport</button>
+      </div>
+      <p style="color:var(--subtle);font-size:12px;margin-top:10px;text-align:center">You can add more systems after creating your passport.</p>
+    </div>
+    <div id="step-3" style="display:none;text-align:center;max-width:580px;margin:0 auto">
+      <h1 class="page-title" style="margin-bottom:16px">Your HomePassport is ready.</h1>
+      <p style="color:var(--muted);font-size:17px;line-height:1.7;margin-bottom:36px" id="step3-msg"></p>
+      <button class="btn" style="font-size:17px;padding:16px 40px" onclick="viewCreatedPassport()">View My HomePassport</button>
+    </div>
+  </div>
+</div>
+<div id="contractor" class="view">
+  <div class="shell">
+    <h1 class="page-title" style="margin-bottom:32px">Contractor Portal</h1>
+    <div style="display:flex;gap:8px;margin-bottom:32px">
+      <button class="btn" id="ctab-log" onclick="cTab('log')" style="padding:11px 26px;font-size:14px">Log Install</button>
+      <button class="btn ghost" id="ctab-homes" onclick="cTab('homes')" style="padding:11px 26px;font-size:14px">All Homes</button>
+    </div>
+    <div id="c-log">
+      <div id="c-success" style="display:none"></div>
+      <div class="card glow" style="max-width:640px">
+        <div class="grid2">
+          <div class="span2"><label class="lbl">Your Company</label><select class="inp" id="c-contractor"></select></div>
+          <div><label class="lbl">Customer Name *</label><input class="inp" id="c-name" placeholder="Jane Smith"/></div>
+          <div><label class="lbl">Customer Email</label><input class="inp" id="c-email" placeholder="jane@email.com"/></div>
+          <div class="span2"><label class="lbl">Property Address *</label><input class="inp" id="c-address" placeholder="123 Maple St"/></div>
+          <div><label class="lbl">City</label><input class="inp" id="c-city" placeholder="Portland"/></div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:0 0 80px"><label class="lbl">State</label><input class="inp" id="c-state" placeholder="ME"/></div>
+            <div style="flex:1"><label class="lbl">Zip</label><input class="inp" id="c-zip" placeholder="04101"/></div>
+          </div>
+          <div><label class="lbl">System *</label>
+            <select class="inp" id="c-sys">
+              <option value="Windows">Windows</option>
+              <option value="Roof">Roof</option>
+              <option value="HVAC">HVAC</option>
+              <option value="Water Heater">Water Heater</option>
+              <option value="Electrical Panel">Electrical Panel</option>
+              <option value="Gutters">Gutters</option>
+              <option value="Insulation">Insulation</option>
+            </select>
+          </div>
+          <div><label class="lbl">Brand *</label><input class="inp" id="c-brand" placeholder="e.g. Andersen"/></div>
+          <div><label class="lbl">Units Installed</label><input class="inp" id="c-units" type="number" placeholder="12"/></div>
+          <div><label class="lbl">Install Date *</label><input class="inp" id="c-date" type="date"/></div>
+          <div><label class="lbl">Warranty (years)</label><input class="inp" id="c-warranty" type="number" placeholder="15"/></div>
+        </div>
+        <button class="btn full" style="margin-top:26px;font-size:16px" onclick="logInstall()">Log Install - Create HomePassport</button>
+      </div>
+    </div>
+    <div id="c-homes" style="display:none;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="add-system-modal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900">Add a System</h2>
+      <button onclick="closeModal()" style="background:none;border:none;color:var(--muted);font-size:24px;line-height:1">x</button>
+    </div>
+    <div class="grid2">
+      <div class="span2"><label class="lbl">System</label>
+        <select class="inp" id="m-sys">
+          <option value="Windows">Windows</option>
+          <option value="Roof">Roof</option>
+          <option value="HVAC">HVAC</option>
+          <option value="Water Heater">Water Heater</option>
+          <option value="Electrical Panel">Electrical Panel</option>
+          <option value="Gutters">Gutters</option>
+          <option value="Insulation">Insulation</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Do you know when installed?</label>
+        <select class="inp" id="m-known" onchange="updateModalDate()">
+          <option value="yes">Yes, I know the date</option>
+          <option value="approx">Approximate year only</option>
+          <option value="no">Not sure</option>
+        </select>
+      </div>
+      <div id="m-date-wrap"><label class="lbl" id="m-date-lbl">Install Date</label><input class="inp" id="m-date" type="date"/></div>
+      <div><label class="lbl">Brand (optional)</label><input class="inp" id="m-brand" placeholder="e.g. Andersen"/></div>
+      <div><label class="lbl">Warranty (years)</label><input class="inp" id="m-warranty" type="number" placeholder="15"/></div>
+    </div>
+    <button class="btn full" style="margin-top:20px" onclick="saveModalSystem()">Add System</button>
+  </div>
+</div>
+<script>
+const SB_URL='https://nlcbdfceundtcqauoosv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sY2JkZmNldW5kdGNxYXVvb3N2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MzUxMDUsImV4cCI6MjA5MDIxMTEwNX0.YR4emi_OPqke99Cif3Fobif4d8M_6M8qycj69GUuvsE';
+const SYSTEMS={
+  Windows:{lifespan:15,cost:[8000,15000],tasks:[{m:4,t:'Clean tracks and lubricate hardware'},{m:10,t:'Inspect weatherstripping before winter'}]},
+  Roof:{lifespan:25,cost:[15000,30000],tasks:[{m:4,t:'Inspect shingles after winter'},{m:10,t:'Clean gutters and check flashing'}]},
+  HVAC:{lifespan:15,cost:[7000,12000],tasks:[{m:3,t:'Replace air filter'},{m:6,t:'Schedule AC tune-up'},{m:9,t:'Replace filter + heating tune-up'},{m:12,t:'Replace air filter'}]},
+  'Water Heater':{lifespan:10,cost:[1500,3500],tasks:[{m:4,t:'Flush tank to remove sediment'},{m:10,t:'Test pressure relief valve'}]},
+  'Electrical Panel':{lifespan:40,cost:[2500,4500],tasks:[{m:6,t:'Test GFCI outlets and smoke detectors'},{m:12,t:'Visual inspection for corrosion'}]},
+  Gutters:{lifespan:20,cost:[1500,5000],tasks:[{m:4,t:'Clean gutters after spring pollen'},{m:10,t:'Clean gutters after leaves fall'}]},
+  Insulation:{lifespan:30,cost:[3000,8000],tasks:[{m:10,t:'Check attic insulation before heating season'}]},
+};
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+async function dbGet(table,params=''){
+  const r=await fetch(`${SB_URL}/rest/v1/${table}?${params}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
+  return r.json();
+}
+async function dbPost(table,body){
+  const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify(body)});
+  return r.json();
+}
+function slugify(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
+function getAge(d){return new Date().getFullYear()-new Date(d).getFullYear();}
+function getReplYear(d,life){return new Date(d).getFullYear()+life;}
+function getYearsLeft(d,life){return Math.max(0,getReplYear(d,life)-new Date().getFullYear());}
+function fmtCost(a,b){return `$${(a/1000).toFixed(0)}k - $${(b/1000).toFixed(0)}k`;}
+function normalizeDate(val){
+  if(!val)return null;
+  const s=String(val).trim();
+  if(/^\d{4}$/.test(s))return `${s}-06-01`;
+  if(/^\d{4}-\d{2}$/.test(s))return `${s}-01`;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  return null;
+}
+function getHealth(d,life){
+  const pct=getAge(d)/life;
+  if(pct<0.4)return{label:'Good',color:'#22c55e',pct};
+  if(pct<0.65)return{label:'Aging',color:'#f59e0b',pct};
+  if(pct<0.9)return{label:'Nearing End',color:'#ef4444',pct};
+  return{label:'Replace Soon',color:'#dc2626',pct:1};
+}
+function getTotalValue(installs){return installs.reduce((s,i)=>{const sys=SYSTEMS[i.system];return sys?s+(sys.cost[0]+sys.cost[1])/2:s;},0);}
+function getUpcoming(installs){
+  const now=new Date().getMonth()+1;
+  const tasks=[];
+  installs.forEach(inst=>{
+    const sys=SYSTEMS[inst.system];if(!sys)return;
+    sys.tasks.forEach(t=>{
+      const diff=((t.m-now)+12)%12;
+      tasks.push({system:inst.system,task:t.t,month:t.m,monthName:MONTHS[t.m-1],diff});
+    });
+  });
+  return tasks.sort((a,b)=>a.diff-b.diff).slice(0,6);
+}
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='landing')loadStats();
+}
+async function loadStats(){
+  try{
+    const[h,i,c]=await Promise.all([dbGet('homes','select=id'),dbGet('installations','select=id'),dbGet('contractors','select=id')]);
+    document.getElementById('stat-homes').textContent=Array.isArray(h)?h.length:0;
+    document.getElementById('stat-systems').textContent=Array.isArray(i)?i.length:0;
+    document.getElementById('stat-contractors').textContent=Array.isArray(c)?c.length:0;
+  }catch(e){}
+}
+let lookupTimer;
+async function searchHomes(q){
+  clearTimeout(lookupTimer);
+  const status=document.getElementById('lookup-status');
+  const results=document.getElementById('lookup-results');
+  if(q.length<2){results.innerHTML='';status.style.display='none';return;}
+  status.style.display='block';
+  lookupTimer=setTimeout(async()=>{
+    try{
+      const data=await dbGet('homes',`or=(address.ilike.*${q}*,owner_name.ilike.*${q}*)&select=*`);
+      status.style.display='none';
+      if(!Array.isArray(data)||data.length===0){
+        results.innerHTML=`<div class="card"><p style="color:var(--muted)">No homes found. <button onclick="showView('self-log')" style="color:var(--accent);background:none;border:none;font-weight:600;cursor:pointer">Add your home</button></p></div>`;
+        return;
+      }
+      results.innerHTML=data.map(h=>`<button onclick="openPassport('${h.id}')" class="card hov" style="text-align:left;width:100%;border:1px solid var(--border)"><div style="font-weight:700;color:var(--text);font-size:17px">${h.address}</div><div style="color:var(--muted);font-size:13px;margin-top:4px">${h.city||''}, ${h.state||''} - ${h.owner_name} - ${h.id}</div></button>`).join('');
+    }catch(e){status.style.display='none';}
+  },350);
+}
+let currentHome=null;
+async function openPassport(homeId){
+  try{
+    const homes=await dbGet('homes',`id=eq.${homeId}&select=*`);
+    const home=Array.isArray(homes)&&homes.length>0?homes[0]:null;
+    if(!home)return;
+    const installs=await dbGet('installations',`home_id=eq.${homeId}&select=*`);
+    currentHome={...home,installations:Array.isArray(installs)?installs:[]};
+    renderPassport(currentHome);
+    showView('passport');
+  }catch(e){alert('Could not load passport.');}
+}
+function renderPassport(home){
+  const installs=home.installations||[];
+  const allSys=Object.keys(SYSTEMS);
+  const missing=allSys.filter(s=>!installs.map(i=>i.system).includes(s));
+  const urgent=installs.filter(i=>getYearsLeft(i.install_date,i.expected_life||SYSTEMS[i.system]?.lifespan||15)<=4);
+  const total=getTotalValue(installs);
+  const upcoming=getUpcoming(installs);
+  const url=`${location.origin}/?home=${home.slug||home.id}`;
+  document.getElementById('passport-header').innerHTML=`
+    <div style="font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;font-weight:700;margin-bottom:10px">${home.id}</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(24px,5vw,44px);font-weight:900;letter-spacing:-1px;margin-bottom:6px">${home.address}</h1>
+    <p style="color:var(--muted);font-size:16px;margin-bottom:20px">${home.city||''}, ${home.state||''} ${home.zip||''} - ${home.owner_name}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="pill" style="background:rgba(99,102,241,.15);color:#818cf8">${installs.length} Systems Logged</span>
+      ${urgent.length>0?`<span class="pill" style="background:rgba(239,68,68,.15);color:#fca5a5">${urgent.length} Need Attention</span>`:''}
+      <span class="pill" style="background:rgba(245,158,11,.15);color:#fbbf24">$${(total/1000).toFixed(0)}k Tracked Value</span>
+      <span class="pill" style="background:rgba(34,197,94,.15);color:#86efac">${upcoming.length} Upcoming Tasks</span>
+    </div>`;
+  document.getElementById('passport-url').textContent=url;
+  document.getElementById('passport-alerts').innerHTML=urgent.length===0?'':
+    `<div class="alert-box"><div style="font-weight:700;color:#fca5a5;margin-bottom:12px;font-size:15px">Replacement Alerts</div>
+    ${urgent.map(i=>{const sys=SYSTEMS[i.system];const life=i.expected_life||sys?.lifespan||15;const yrs=getYearsLeft(i.install_date,life);
+    return `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(239,68,68,.1)">
+      <span style="color:#fcd34d"><strong>${i.system}</strong> - ${yrs===0?'Past expected life':`~${yrs} yr${yrs!==1?'s':''} remaining`}</span>
+      <span style="color:#fca5a5;font-weight:700">${sys?fmtCost(sys.cost[0],sys.cost[1]):'N/A'}</span></div>`;}).join('')}</div>`;
+  document.getElementById('passport-stats').innerHTML=
+    [['Total Systems',installs.length,`of ${allSys.length} trackable`],
+     ['Est. Replace Value',`$${(total/1000).toFixed(0)}k`,'across all systems'],
+     ['Upcoming Tasks',upcoming.length,'next 12 months'],
+     ['Not Yet Logged',missing.length,'systems unknown']]
+    .map(([l,v,s])=>`<div class="card stat-card"><div class="stat-label">${l}</div><div class="stat-value">${v}</div><div class="stat-sub">${s}</div></div>`).join('');
+  const nowMonth=new Date().getMonth()+1;
+  document.getElementById('tab-systems').innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn ghost" onclick="openModal()" style="padding:10px 20px;font-size:14px">+ Add System</button>
+    </div>
+    ${installs.length===0?'<div class="card"><p style="color:var(--muted)">No systems logged yet. Click + Add System to get started.</p></div>':''}
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px">
+    ${installs.map(inst=>{
+      const sys=SYSTEMS[inst.system]||{lifespan:15,cost:[0,0]};
+      const life=inst.expected_life||sys.lifespan;
+      const h=getHealth(inst.install_date,life);
+      const replY=getReplYear(inst.install_date,life);
+      const yrsLeft=getYearsLeft(inst.install_date,life);
+      const instY=new Date(inst.install_date).getFullYear();
+      const age=getAge(inst.install_date);
+      return `<div class="card hov">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:18px">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span style="font-weight:700;font-size:20px">${inst.system}</span>
+              <span class="pill" style="background:${h.color}22;color:${h.color}">${h.label}</span>
+            </div>
+            <div style="color:var(--muted);font-size:14px">${inst.brand||''}${inst.units?` - ${inst.units} units`:''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:700;font-size:17px">Installed ${instY}</div>
+            <div style="color:var(--muted);font-size:13px">${age} year${age!==1?'s':''} old</div>
+          </div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,h.pct*100)}%;background:linear-gradient(90deg,${h.color}88,${h.color})"></div></div>
+        <div class="info-grid">
+          ${[['Est. Replace',`~${replY}`],['Years Left',yrsLeft>0?`~${yrsLeft} yrs`:'Past life'],['Replace Cost',sys.cost[0]>0?fmtCost(sys.cost[0],sys.cost[1]):'N/A'],['Installer',inst.contractor_name||'Self-logged'],...(inst.warranty?[['Warranty Exp.',`${instY+inst.warranty}`]]:[])].map(([l,v])=>`<div class="info-cell"><div class="info-cell-label">${l}</div><div class="info-cell-value">${v}</div></div>`).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+    </div>
+    ${missing.length===0?'':`<h3 style="color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;font-weight:700">Not Yet Logged</h3>
+    <div class="missing-grid">${missing.map(s=>`<div class="missing-item"><div style="color:var(--subtle);font-weight:600;font-size:14px">${s}</div><div style="font-size:11px;color:var(--subtle);opacity:.6">Unknown</div></div>`).join('')}</div>`}`;
+  document.getElementById('tab-maintenance').innerHTML=`
+    <p style="color:var(--muted);margin-bottom:28px;font-size:15px">Recommended tasks based on your logged systems.</p>
+    ${getUpcoming(installs).length===0?'<div class="card"><p style="color:var(--muted)">Log your home systems to see a personalized maintenance calendar.</p></div>':''}
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:40px">
+    ${getUpcoming(installs).map(item=>`<div class="card hov" style="padding:16px 22px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="background:var(--accent-glow);border-radius:12px;padding:10px 14px;text-align:center;min-width:58px">
+          <div style="font-size:13px;color:var(--accent);font-weight:700">${item.monthName}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;margin-bottom:3px">${item.task}</div>
+          <div style="font-size:13px;color:var(--muted)">${item.system} - ${item.diff===0?'This month':`In ~${item.diff} month${item.diff!==1?'s':''}`}</div>
+        </div>
+        ${item.diff<=1?'<span class="pill" style="background:rgba(245,158,11,.15);color:#fbbf24">Coming up</span>':''}
+      </div>
+    </div>`).join('')}
+    </div>
+    <h3 style="color:var(--muted);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;font-weight:700">Year at a Glance</h3>
+    <div class="cal-grid">
+    ${MONTHS.map((m,idx)=>{
+      const mn=idx+1;const isCur=mn===nowMonth;
+      const tasks=installs.flatMap(inst=>{const sys=SYSTEMS[inst.system];if(!sys)return[];return sys.tasks.filter(t=>t.m===mn).map(t=>({...t,system:inst.system}));});
+      return `<div class="cal-cell" style="background:${isCur?'rgba(99,102,241,.1)':'rgba(255,255,255,.02)'};border:1px solid ${isCur?'var(--accent-border)':'var(--border)'}">
+        <div style="font-weight:700;color:${isCur?'var(--accent)':'var(--muted)'};font-size:12px;margin-bottom:8px">${m}</div>
+        ${tasks.length===0?'<div style="font-size:11px;color:var(--subtle)">No tasks</div>':tasks.map(t=>`<div style="font-size:11px;margin-bottom:3px">${t.system}</div>`).join('')}
+      </div>`;
+    }).join('')}
+    </div>`;
+  renderDocuments(home);
+}
+async function renderDocuments(home){
+  const docsEl=document.getElementById('tab-documents');
+  let docs=[];
+  try{docs=await dbGet('documents',`home_id=eq.${home.id}&select=*&order=created_at.desc`);}catch(e){}
+  if(!Array.isArray(docs))docs=[];
+  docsEl.innerHTML=`
+    <p style="color:var(--muted);margin-bottom:24px;font-size:15px">Store warranties, manuals, receipts, and permits.</p>
+    <div class="card glow" style="margin-bottom:28px">
+      <h3 style="font-weight:700;margin-bottom:18px">Upload Document</h3>
+      <div class="grid2">
+        <div><label class="lbl">Document Name</label><input class="inp" id="doc-name" placeholder="e.g. Window Warranty"/></div>
+        <div><label class="lbl">System</label><select class="inp" id="doc-sys"><option>General</option>${(home.installations||[]).map(i=>`<option>${i.system}</option>`).join('')}</select></div>
+        <div><label class="lbl">Type</label><select class="inp" id="doc-type"><option>Warranty</option><option>Manual</option><option>Receipt</option><option>Permit</option><option>Photo</option><option>Other</option></select></div>
+      </div>
+      <div style="margin-top:16px">
+        <input type="file" id="doc-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none" onchange="uploadDoc('${home.id}')"/>
+        <button class="btn" onclick="document.getElementById('doc-name').value?document.getElementById('doc-file').click():alert('Add a document name first')">Choose File to Upload</button>
+        <span style="color:var(--muted);font-size:12px;margin-left:16px">PDF, image, or Word - Max 5MB</span>
+      </div>
+      <div id="doc-uploading" style="display:none;color:#86efac;margin-top:12px">Uploading...</div>
+    </div>
+    <div id="doc-list">
+    ${docs.length===0?'<div class="card"><p style="color:var(--muted);text-align:center;padding:20px 0">No documents yet.</p></div>':
+      docs.map(doc=>`<div class="card hov" style="padding:16px 22px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div><div style="font-weight:600">${doc.label}</div><div style="font-size:12px;color:var(--muted)">${doc.system} - ${doc.doc_type} - ${doc.filename}</div></div>
+          <div style="display:flex;gap:8px">
+            <span class="pill" style="background:rgba(129,140,248,.15);color:#818cf8">${doc.doc_type}</span>
+            ${doc.data_url?`<a href="${doc.data_url}" download="${doc.filename}" style="text-decoration:none"><button class="btn ghost" style="padding:6px 14px;font-size:12px">Download</button></a>`:''}
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+async function uploadDoc(homeId){
+  const file=document.getElementById('doc-file').files[0];
+  const name=document.getElementById('doc-name').value;
+  if(!file||!name)return;
+  document.getElementById('doc-uploading').style.display='block';
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    await dbPost('documents',{id:'doc-'+Date.now(),home_id:homeId,label:name,system:document.getElementById('doc-sys').value,doc_type:document.getElementById('doc-type').value,filename:file.name,size:file.size,data_url:e.target.result});
+    document.getElementById('doc-uploading').style.display='none';
+    renderDocuments(currentHome);
+  };
+  reader.readAsDataURL(file);
+}
+function copyPassportUrl(){
+  const url=document.getElementById('passport-url').textContent;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Link',2000);
+  });
+}
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['systems','maintenance','documents'][i]===name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>{
+    c.classList.toggle('active',c.id===`tab-${name}`);
+  });
+}
+function openModal(){document.getElementById('add-system-modal').classList.add('open');}
+function closeModal(){document.getElementById('add-system-modal').classList.remove('open');}
+function updateModalDate(){
+  const known=document.getElementById('m-known').value;
+  const wrap=document.getElementById('m-date-wrap');
+  const lbl=document.getElementById('m-date-lbl');
+  const inp=document.getElementById('m-date');
+  if(known==='no'){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  if(known==='approx'){lbl.textContent='Approx. Year';inp.type='text';inp.placeholder='e.g. 2015';}
+  else{lbl.textContent='Install Date';inp.type='date';inp.placeholder='';}
+}
+async function saveModalSystem(){
+  const sys=document.getElementById('m-sys').value;
+  const known=document.getElementById('m-known').value;
+  const dateVal=document.getElementById('m-date').value;
+  const brand=document.getElementById('m-brand').value;
+  const warranty=document.getElementById('m-warranty').value;
+  const date=normalizeDate(known==='no'?`${new Date().getFullYear()}-06-01`:dateVal);
+  if(!date){alert('Please enter an install date.');return;}
+  try{
+    const res=await dbPost('installations',{
+      id:`inst-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+      home_id:currentHome.id,contractor_name:'Self-logged',
+      system:sys,brand:brand||'',units:null,install_date:date,
+      warranty:warranty?parseInt(warranty):null,
+      expected_life:SYSTEMS[sys]?.lifespan||15
+    });
+    if(Array.isArray(res)&&res.length>0){
+      currentHome.installations.push(res[0]);
+      renderPassport(currentHome);
+      closeModal();
+    }
+  }catch(e){alert('Could not save. Please try again.');}
+}
+let slSystems=[];
+let createdHome=null;
+function updateStepUI(step){
+  ['step-1','step-2','step-3'].forEach((id,i)=>document.getElementById(id).style.display=i+1===step?'block':'none');
+  const steps=['Your Home','Your Systems','Done'];
+  document.getElementById('step-indicator').innerHTML=steps.map((l,i)=>`
+    <div class="step-dot" style="background:${step>i+1||step===i+1?'var(--accent)':'var(--border)'};color:${step>=i+1?'#fff':'var(--muted)'}">
+      ${step>i+1?'v':i+1}
+    </div>
+    <span style="font-size:13px;color:${step===i+1?'var(--text)':'var(--muted)'};font-weight:${step===i+1?600:400}">${l}</span>
+    ${i<2?'<div class="step-line"></div>':''}
+  `).join('');
+}
+function goStep1(){slSystems=[];updateStepUI(1);}
+function goStep2(){
+  if(!document.getElementById('sl-name').value||!document.getElementById('sl-address').value){
+    alert('Please fill in your name and address.');return;
+  }
+  updateStepUI(2);
+  document.getElementById('sl-systems-list').style.display='none';
+}
+function addSystem(){
+  const sys=document.getElementById('sl-sys').value;
+  const known=document.getElementById('sl-known').value;
+  const dateVal=document.getElementById('sl-date').value;
+  const brand=document.getElementById('sl-brand').value;
+  const warranty=document.getElementById('sl-warranty').value;
+  slSystems.push({id:'s'+Date.now(),system:sys,known,installDate:dateVal,brand,warranty});
+  renderSLSystems();
+  document.getElementById('sl-brand').value='';
+  document.getElementById('sl-date').value='';
+  document.getElementById('sl-warranty').value='';
+}
+function renderSLSystems(){
+  const list=document.getElementById('sl-systems-list');
+  if(slSystems.length===0){list.style.display='none';return;}
+  list.style.display='flex';
+  list.innerHTML=slSystems.map(s=>`
+    <div class="progress-item">
+      <span><strong>${s.system}</strong>${s.brand?` - ${s.brand}`:''}${s.installDate?` - ${s.installDate.substring(0,4)}`:' (year unknown)'}</span>
+      <button onclick="removeSystem('${s.id}')" style="background:none;border:none;color:var(--muted);font-size:18px;line-height:1">x</button>
+    </div>`).join('');
+  document.getElementById('sl-create-btn').textContent=`Create HomePassport with ${slSystems.length} system${slSystems.length!==1?'s':''}`;
+}
+function removeSystem(id){slSystems=slSystems.filter(s=>s.id!==id);renderSLSystems();}
+document.getElementById('sl-known').addEventListener('change',function(){
+  const known=this.value;
+  const wrap=document.getElementById('sl-date-wrap');
+  const lbl=document.getElementById('sl-date-lbl');
+  const inp=document.getElementById('sl-date');
+  if(known==='no'){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  if(known==='approx'){lbl.textContent='Approx. Year';inp.type='text';inp.placeholder='e.g. 2015';}
+  else{lbl.textContent='Install Date';inp.type='date';inp.placeholder='';}
+});
+async function createPassport(){
+  const name=document.getElementById('sl-name').value;
+  const address=document.getElementById('sl-address').value;
+  if(!name||!address){alert('Please fill in your name and address.');return;}
+  const btn=document.getElementById('sl-create-btn');
+  btn.disabled=true;btn.textContent='Creating...';
+  try{
+    const homeId='HP-'+Date.now();
+    const slug=slugify(address)+'-'+Date.now();
+    const hRes=await dbPost('homes',{id:homeId,address,city:document.getElementById('sl-city').value||'',state:document.getElementById('sl-state').value||'',zip:document.getElementById('sl-zip').value||'',owner_name:name,email:document.getElementById('sl-email').value||'',slug});
+    const home=Array.isArray(hRes)&&hRes.length>0?hRes[0]:null;
+    if(!home){btn.disabled=false;btn.textContent='Create HomePassport';alert('Could not create home. Please try again.');return;}
+    for(const sys of slSystems){
+      const date=normalizeDate(sys.installDate);
+      if(!date)continue;
+      await dbPost('installations',{id:`inst-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,home_id:home.id,contractor_name:'Self-logged',system:sys.system,brand:sys.brand||'',units:null,install_date:date,warranty:sys.warranty?parseInt(sys.warranty):null,expected_life:SYSTEMS[sys.system]?.lifespan||15});
+    }
+    const installs=await dbGet('installations',`home_id=eq.${home.id}&select=*`);
+    createdHome={...home,installations:Array.isArray(installs)?installs:[]};
+    document.getElementById('step3-msg').textContent=`${createdHome.installations.length} system${createdHome.installations.length!==1?'s':''} logged for ${address}.`;
+    updateStepUI(3);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Create HomePassport';
+    alert('Something went wrong: '+e.message);
+  }
+}
+function viewCreatedPassport(){
+  if(!createdHome)return;
+  currentHome=createdHome;
+  renderPassport(currentHome);
+  showView('passport');
+}
+function cTab(tab){
+  document.getElementById('c-log').style.display=tab==='log'?'block':'none';
+  document.getElementById('c-homes').style.display=tab==='homes'?'flex':'none';
+  document.getElementById('ctab-log').className=tab==='log'?'btn':'btn ghost';
+  document.getElementById('ctab-homes').className=tab==='homes'?'btn':'btn ghost';
+  document.getElementById('ctab-log').style.cssText='padding:11px 26px;font-size:14px';
+  document.getElementById('ctab-homes').style.cssText='padding:11px 26px;font-size:14px';
+  if(tab==='homes')loadContractorHomes();
+}
+async function loadContractorHomes(){
+  const el=document.getElementById('c-homes');
+  el.innerHTML='<p style="color:var(--muted)">Loading...</p>';
+  const homes=await dbGet('homes','select=*&order=created_at.desc');
+  if(!Array.isArray(homes)||homes.length===0){el.innerHTML='<div class="card"><p style="color:var(--muted)">No homes logged yet.</p></div>';return;}
+  el.innerHTML=homes.map(h=>`<div class="card hov" style="padding:18px 24px"><div style="font-weight:700">${h.address}</div><div style="color:var(--muted);font-size:13px;margin-top:4px">${h.city||''}, ${h.state||''} - ${h.owner_name} - ${h.id}</div></div>`).join('');
+}
+async function loadContractors(){
+  const data=await dbGet('contractors','select=*');
+  const sel=document.getElementById('c-contractor');
+  if(Array.isArray(data)&&data.length>0){
+    sel.innerHTML=data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }else{
+    sel.innerHTML='<option value="">No contractors yet</option>';
+  }
+}
+async function logInstall(){
+  const name=document.getElementById('c-name').value;
+  const address=document.getElementById('c-address').value;
+  const date=document.getElementById('c-date').value;
+  const brand=document.getElementById('c-brand').value;
+  if(!name||!address||!date||!brand){alert('Please fill in all required fields.');return;}
+  const contractorSel=document.getElementById('c-contractor');
+  const contractorName=contractorSel.options[contractorSel.selectedIndex]?.text||'Unknown';
+  const sys=document.getElementById('c-sys').value;
+  const existing=await dbGet('homes',`slug=eq.${slugify(address)}&select=*`);
+  let home=Array.isArray(existing)&&existing.length>0?existing[0]:null;
+  if(!home){
+    const r=await dbPost('homes',{id:'HP-'+Date.now(),address,city:document.getElementById('c-city').value||'',state:document.getElementById('c-state').value||'',zip:document.getElementById('c-zip').value||'',owner_name:name,email:document.getElementById('c-email').value||'',slug:slugify(address)});
+    home=Array.isArray(r)?r[0]:null;
+  }
+  if(!home){alert('Could not create home record.');return;}
+  await dbPost('installations',{id:'inst-'+Date.now(),home_id:home.id,contractor_name:contractorName,system:sys,brand,units:document.getElementById('c-units').value?parseInt(document.getElementById('c-units').value):null,install_date:date,warranty:document.getElementById('c-warranty').value?parseInt(document.getElementById('c-warranty').value):null,expected_life:SYSTEMS[sys]?.lifespan||15});
+  const passportUrl=`${location.origin}/?home=${home.slug||home.id}`;
+  document.getElementById('c-success').style.display='block';
+  document.getElementById('c-success').innerHTML=`<div class="success-box"><div style="color:#86efac;font-weight:700;margin-bottom:8px">Install logged - HomePassport created!</div><div style="color:var(--muted);font-size:14px;margin-bottom:10px">Send this link to your customer at ${address}:</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><code style="color:#818cf8;font-size:13px;flex:1;word-break:break-all">${passportUrl}</code><button class="btn ghost" onclick="navigator.clipboard.writeText('${passportUrl}')" style="padding:7px 14px;font-size:12px">Copy</button></div></div>`;
+  ['c-name','c-email','c-address','c-city','c-state','c-zip','c-brand','c-units','c-warranty'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('c-date').value='';
+}
+updateStepUI(1);
+loadStats();
+loadContractors();
+</script>
+</body>
 </html>
